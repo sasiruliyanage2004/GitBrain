@@ -64,8 +64,8 @@ export default function GitBrainNextGen() {
   };
 
   return (
-    // bg-[#09090b] is a very deep matte zinc. No blurry neon orbs here.
-    <div className="h-screen w-full bg-[#09090b] text-[#A1A1AA] font-sans overflow-hidden flex relative z-0 selection:bg-indigo-500/30">
+    // bg-[#09090b] is a very deep matte zinc.
+    <div className="h-[100dvh] w-full bg-[#09090b] text-[#A1A1AA] font-sans overflow-hidden flex flex-col-reverse md:flex-row relative z-0 selection:bg-indigo-500/30">
       
       {/* Matte Texture Overlay (Subtle noise/grain) */}
       <div 
@@ -73,55 +73,58 @@ export default function GitBrainNextGen() {
         style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}
       />
       
-      {/* 📌 Left Slim Navigation Dock (Matte Flat) */}
-      <nav className="w-16 h-full border-r border-white/[0.04] bg-[#09090b] flex flex-col items-center py-6 gap-8 z-10">
-        <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+      {/* 📌 Navigation Dock (Bottom on Mobile, Left on Desktop) */}
+      <nav className="w-full h-16 md:w-16 md:h-full border-t md:border-t-0 md:border-r border-white/[0.04] bg-[#09090b] flex flex-row md:flex-col items-center justify-around md:justify-start md:py-6 md:gap-8 z-20 shrink-0">
+        <div className="hidden md:flex w-9 h-9 rounded-lg bg-indigo-500/10 items-center justify-center border border-indigo-500/20 shrink-0">
           <Brain className="w-5 h-5 text-indigo-400" />
         </div>
         
-        <div className="flex flex-col gap-5 mt-4">
+        <div className="flex flex-row md:flex-col gap-2 md:gap-5 px-2 md:px-0 md:mt-4 w-full md:w-auto justify-around md:justify-center">
           <NavIcon icon={<Network />} id="neural-map" active={activeView} set={setActiveView} tooltip="Neural Map" />
           <NavIcon icon={<Code2 />} id="code" active={activeView} set={setActiveView} tooltip="Code Editor" />
           <NavIcon icon={<GitPullRequest />} id="prs" active={activeView} set={setActiveView} tooltip="Merge Engine" />
           <NavIcon icon={<Play />} id="ci" active={activeView} set={setActiveView} tooltip="CI Sandbox" />
           <NavIcon icon={<Shield />} id="security" active={activeView} set={setActiveView} tooltip="Security Audit" />
+          <div className="md:hidden flex">
+             <NavIcon icon={<Settings />} id="settings" active={activeView} set={setActiveView} tooltip="Settings" />
+          </div>
         </div>
 
-        <div className="mt-auto mb-2">
+        <div className="hidden md:flex mt-auto mb-2">
           <NavIcon icon={<Settings />} id="settings" active={activeView} set={setActiveView} tooltip="Settings" />
         </div>
       </nav>
 
-      {/* 🎛️ Main Bento-Box Grid Area (Professional Spacing & Borders) */}
-      <main className="flex-1 h-full p-6 grid grid-cols-12 grid-rows-6 gap-6 overflow-hidden z-10">
+      {/* 🎛️ Main Area (Scrollable flex on Mobile, Bento Grid on Desktop) */}
+      <main className="flex-1 h-full p-3 md:p-6 flex flex-col md:grid md:grid-cols-12 md:grid-rows-6 gap-3 md:gap-6 overflow-y-auto md:overflow-hidden z-10 pb-20 md:pb-6">
         
         {/* Bento 1: Header / Project Info */}
-        <header className="col-span-8 row-span-1 rounded-xl bg-[#121214] border border-white/[0.04] p-5 flex items-center justify-between shadow-sm relative overflow-hidden">
-          <div className="flex items-center gap-4 z-10">
-            <div className="w-10 h-10 rounded-md bg-[#18181B] flex items-center justify-center border border-white/[0.04]">
+        <header className="md:col-span-8 md:row-span-1 rounded-xl bg-[#121214] border border-white/[0.04] p-4 md:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0 shadow-sm relative overflow-hidden shrink-0">
+          <div className="flex items-center gap-3 md:gap-4 z-10">
+            <div className="hidden sm:flex w-10 h-10 rounded-md bg-[#18181B] items-center justify-center border border-white/[0.04]">
               <Globe className="w-5 h-5 text-[#D4D4D8]" />
             </div>
             <div>
-              <h1 className="text-lg font-medium text-[#FAFAFA] tracking-tight">Synapse AI <span className="text-[#71717A] font-normal">/ Core Services</span></h1>
-              <div className="flex items-center gap-3 mt-0.5 text-xs text-[#71717A] tracking-wide">
+              <h1 className="text-base md:text-lg font-medium text-[#FAFAFA] tracking-tight">Synapse AI <span className="text-[#71717A] font-normal hidden sm:inline">/ Core Services</span></h1>
+              <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-1 md:mt-0.5 text-[10px] md:text-xs text-[#71717A] tracking-wide">
                 <span className="flex items-center gap-1"><GitBranch className="w-3 h-3" /> main</span>
                 <span className="flex items-center gap-1"><GitCommitHorizontal className="w-3 h-3" /> 4d572a9</span>
-                <span className="px-2 py-0.5 rounded text-xs text-indigo-400/80 border border-indigo-400/20 bg-indigo-400/5">Production</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] md:text-xs text-indigo-400/80 border border-indigo-400/20 bg-indigo-400/5">Production</span>
               </div>
             </div>
           </div>
-          <div className="flex gap-3 z-10">
-            <button className="px-4 py-2 rounded-lg bg-[#18181B] hover:bg-[#27272A] border border-white/[0.04] text-xs font-medium text-[#E4E4E7] transition-all flex items-center gap-2">
-              <Disc className="w-3.5 h-3.5" /> Snapshot
+          <div className="flex gap-2 md:gap-3 z-10 w-full md:w-auto">
+            <button className="flex-1 md:flex-none justify-center px-3 md:px-4 py-2 rounded-lg bg-[#18181B] hover:bg-[#27272A] border border-white/[0.04] text-[11px] md:text-xs font-medium text-[#E4E4E7] transition-all flex items-center gap-2">
+              <Disc className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Snapshot</span>
             </button>
-            <button className="px-4 py-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-400 text-xs font-medium transition-all flex items-center gap-2">
-              <Zap className="w-3.5 h-3.5" /> Deploy
+            <button className="flex-1 md:flex-none justify-center px-3 md:px-4 py-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-400 text-[11px] md:text-xs font-medium transition-all flex items-center gap-2">
+              <Zap className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Deploy</span>
             </button>
           </div>
         </header>
 
         {/* Bento 2: Codebase Neural Map (Matte/Sophisticated Variant) */}
-        <section className="col-span-8 row-span-5 rounded-xl bg-[#121214] border border-white/[0.04] flex flex-col relative overflow-hidden shadow-sm">
+        <section className="hidden md:flex md:col-span-8 md:row-span-5 rounded-xl bg-[#121214] border border-white/[0.04] flex-col relative overflow-hidden shadow-sm shrink-0 min-h-[250px]">
           <div className="px-5 py-3 border-b border-white/[0.04] flex items-center justify-between bg-[#121214]">
             <h2 className="text-xs font-medium text-[#E4E4E7] uppercase tracking-widest flex items-center gap-2">
               <Network className="w-3.5 h-3.5 text-[#A1A1AA]" /> Architecture Map
@@ -179,9 +182,9 @@ export default function GitBrainNextGen() {
         </section>
 
         {/* Bento 3: Antigravity AI Console (Matte Right Sidebar) */}
-        <section className="col-span-4 row-span-6 rounded-xl bg-[#121214] border border-white/[0.04] shadow-sm flex flex-col relative overflow-hidden">
+        <section className="flex-1 md:col-span-4 md:row-span-6 rounded-xl bg-[#121214] border border-white/[0.04] shadow-sm flex flex-col relative overflow-hidden shrink-0 min-h-[400px]">
           {/* Header */}
-          <div className="px-5 py-4 border-b border-white/[0.04] bg-[#121214] flex flex-col gap-4">
+          <div className="px-4 md:px-5 py-3 md:py-4 border-b border-white/[0.04] bg-[#121214] flex flex-col gap-3 md:gap-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-medium text-[#FAFAFA] flex items-center gap-2">
                 <Rocket className="w-4 h-4 text-[#A1A1AA]" /> AI Command Center
