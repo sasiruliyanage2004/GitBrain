@@ -2,13 +2,230 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  box-sizing: border-box;
+@layer base {
+  :root {
+    --bg-app: #09090B;
+    --bg-panel: rgba(18, 18, 20, 0.85);
+    --bg-panel-hover: rgba(28, 28, 30, 0.95);
+    --border-color: #27272A;
+    --border-strong: #3F3F46;
+    
+    --text-primary: #FAFAFA;
+    --text-secondary: #A1A1AA;
+    --text-muted: #71717A;
+    
+    --brand: #10B981;
+    --brand-light: #064E3B;
+    
+    --success: #34D399;
+    --success-light: #022C22;
+    
+    --danger: #F87171;
+    --danger-light: #450A0A;
+    
+    --warning: #FBBF24;
+    --warning-light: #451A03;
+
+    --shadow-card: 0 8px 28px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-glow: 0 12px 40px rgba(16, 185, 129, 0.15);
+    
+    --panel-blur: blur(24px) saturate(180%);
+    
+    --sidebar-bg: #09090B;
+    --grid-bg: 
+      radial-gradient(ellipse at 0% 50%, rgba(16, 185, 129, 0.15), transparent 60%),
+      radial-gradient(ellipse at 100% 50%, rgba(129, 140, 248, 0.1), transparent 60%);
+    --spotlight-color: rgba(16, 185, 129, 0.07);
+  }
+
+  @keyframes waveBg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  body {
+    background-color: var(--bg-app);
+    background-image: var(--grid-bg);
+    background-size: 200% 200%;
+    background-attachment: fixed;
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
+    animation: waveBg 20s ease-in-out infinite;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  /* Matte SVG Noise Overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9998;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.04;
+  }
+
+  /* Mouse Spotlight effect */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    background: radial-gradient(
+      circle 500px at var(--mouse-x, 50vw) var(--mouse-y, 50vh),
+      var(--spotlight-color) 0%,
+      transparent 50%
+    );
+    transition: background 0.1s ease;
+  }
 }
 
-body {
-  margin: 0;
-  background-color: #0D1117;
-  color: #C9D1D9;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+@layer components {
+  .sidebar {
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    position: relative;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-size: 13.5px; font-weight: 500;
+    position: relative;
+    transition: color 0.2s ease, background 0.2s ease;
+    cursor: pointer;
+  }
+  .nav-item:hover {
+    color: var(--text-primary);
+    background: var(--bg-panel-hover);
+  }
+  .nav-item.active {
+    color: #FFFFFF;
+    background-color: #125c43;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(18, 92, 67, 0.3);
+  }
+  .nav-item.active svg { color: #FFFFFF; }
+  .nav-item:not(.active)::before {
+    content: "";
+    position: absolute; left: -14px; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 0%;
+    background: var(--brand);
+    border-radius: 3px;
+    transition: height 0.2s ease;
+  }
+  .nav-item.active::before {
+    content: "";
+    position: absolute; left: -14px; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 60%;
+    background: var(--brand);
+    border-radius: 3px;
+    box-shadow: 0 0 10px var(--brand);
+  }
+
+  .glass-panel {
+    background: var(--bg-panel);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    box-shadow: var(--shadow-card);
+    transition: all 0.3s ease;
+  }
+  .glass-panel:hover {
+    border-color: var(--border-strong);
+  }
+
+  .kpi-card {
+    background: var(--bg-panel);
+    backdrop-filter: var(--panel-blur);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .kpi-card:hover {
+    border-color: var(--brand);
+    transform: translateY(-2px);
+  }
+  .kpi-card .kpi-value {
+    font-size: 24px; font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+  }
+  .kpi-card .kpi-label {
+    color: var(--text-secondary);
+    font-size: 12px; font-weight: 500;
+  }
+  
+  .kpi-delta {
+    font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .kpi-delta.up { color: var(--success); background: var(--success-light); }
+  .kpi-delta.down { color: var(--danger); background: var(--danger-light); }
+
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px;
+    font-size: 12px; font-weight: 600;
+    border-radius: 20px;
+    color: var(--success);
+    background: var(--success-light);
+  }
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .btn-ghost {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 12px; font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  .btn-ghost:hover {
+    border-color: var(--brand);
+    color: var(--brand);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
