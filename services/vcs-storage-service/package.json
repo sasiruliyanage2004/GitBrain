@@ -1,0 +1,15 @@
+{
+  "name": "gitbrain-vcs-storage-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "diff": "^7.0.0",
+    "express": "^4.21.2"
+  }
+}

@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # 1. API Gateway & Reverse Proxy
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+    container_name: gitbrain-api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - VCS_SERVICE_URL=http://vcs-storage-service:8001
+      - AI_SERVICE_URL=http://ai-orchestrator-service:8002
+      - CI_SERVICE_URL=http://ci-runner-service:8003
+    depends_on:
+      - vcs-storage-service
+      - ai-orchestrator-service
+      - ci-runner-service
+    networks:
+      - gitbrain-network
+
+  # 2. VCS & Cryptographic Storage Engine
+  vcs-storage-service:
+    build:
+      context: ./services/vcs-storage-service
+    container_name: gitbrain-vcs-storage
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+    networks:
+      - gitbrain-network
+
+  # 3. AI PM & Semantic Merge Agent Service
+  ai-orchestrator-service:
+    build:
+      context: ./services/ai-orchestrator-service
+    container_name: gitbrain-ai-orchestrator
+    ports:
+      - "8002:8002"
+    environment:
+      - PORT=8002
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    networks:
+      - gitbrain-network
+
+  # 4. CI/CD Virtual Runner Sandbox Service
+  ci-runner-service:
+    build:
+      context: ./services/ci-runner-service
+    container_name: gitbrain-ci-runner
+    ports:
+      - "8003:8003"
+    environment:
+      - PORT=8003
+    networks:
+      - gitbrain-network
+
+  # 5. Redis Cache & Event Broker
+  redis:
+    image: redis:7-alpine
+    container_name: gitbrain-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - gitbrain-network
+
+  # 6. PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: gitbrain-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: gitbrain
+      POSTGRES_PASSWORD: gitbrain_secret_password
+      POSTGRES_DB: gitbrain_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - gitbrain-network
+
+networks:
+  gitbrain-network:
+    driver: bridge
+
+volumes:
+  pgdata:
