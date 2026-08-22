@@ -23,19 +23,44 @@ export default function GitBrainNextGen() {
     { id: "3", agent: "CI Fixer", time: "10:05:00", action: "Auto-fixing strict mode violations in types.ts", status: "running" },
   ]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
     
+    const userMsg = inputMessage;
+    const processId = (Date.now() + 1).toString();
+    
     setTrajectory(prev => [
       ...prev,
-      { id: Date.now().toString(), agent: "User", time: new Date().toLocaleTimeString(), action: inputMessage, status: "done" },
-      { id: (Date.now() + 1).toString(), agent: "PM Agent", time: new Date().toLocaleTimeString(), action: "Processing request and allocating sub-agents...", status: "running" }
+      { id: Date.now().toString(), agent: "User", time: new Date().toLocaleTimeString(), action: userMsg, status: "done" },
+      { id: processId, agent: "PM Agent", time: new Date().toLocaleTimeString(), action: "Analyzing command and querying API Gateway...", status: "running" }
     ]);
     setInputMessage("");
-    setTimeout(() => {
-      if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
-    }, 100);
+    setTimeout(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, 100);
+
+    try {
+      const response = await fetch('http://localhost:8000/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMsg, repositoryState: "main-branch" })
+      });
+      const data = await response.json();
+      
+      setTrajectory(prev => 
+        prev.map(item => item.id === processId ? { ...item, status: "done", action: "Response generated." } : item)
+      );
+
+      setTrajectory(prev => [
+        ...prev,
+        { id: Date.now().toString(), agent: "Antigravity Core", time: new Date().toLocaleTimeString(), action: data.reply || "Done.", status: "done" }
+      ]);
+      setTimeout(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, 100);
+
+    } catch (error) {
+      setTrajectory(prev => 
+        prev.map(item => item.id === processId ? { ...item, status: "error", action: "Error: Could not connect to API Gateway on Port 8000. Is start-all.bat running?" } : item)
+      );
+    }
   };
 
   return (
@@ -200,9 +225,9 @@ export default function GitBrainNextGen() {
 
           {/* Context/Action Chips */}
           <div className="px-4 pb-2 flex gap-2 overflow-x-auto scrollbar-hide">
-             <ActionChip icon={<LayoutGrid />} label="/plan-sprint" />
-             <ActionChip icon={<GitMerge />} label="/semantic-merge" />
-             <ActionChip icon={<Terminal />} label="/fix-ci" />
+             <ActionChip icon={<LayoutGrid />} label="/snapshot" onClick={() => setInputMessage("/snapshot")} />
+             <ActionChip icon={<GitMerge />} label="/semantic-merge" onClick={() => setInputMessage("/semantic-merge")} />
+             <ActionChip icon={<Terminal />} label="/fix-issue" onClick={() => setInputMessage("/fix-issue")} />
           </div>
 
           {/* Chat Input */}
@@ -291,9 +316,9 @@ function BotIcon({ agent, status }: any) {
   );
 }
 
-function ActionChip({ icon, label }: any) {
+function ActionChip({ icon, label, onClick }: any) {
   return (
-    <button className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 text-xs text-gray-400 hover:text-white transition-colors cursor-pointer">
+    <button onClick={onClick} className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 text-xs text-gray-400 hover:text-white transition-colors cursor-pointer">
       {React.cloneElement(icon, { className: "w-3 h-3" })} {label}
     </button>
   );
