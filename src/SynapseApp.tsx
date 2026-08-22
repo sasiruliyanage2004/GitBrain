@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   Search, GitBranch, GitCommitHorizontal, GitPullRequest, GitMerge,
-  ChevronRight, Play, Terminal, Send, FileCode, Folder, Shield,
-  Settings, MessageSquare, Code2, Zap, Brain, Rocket,
-  Network, LayoutGrid, Cpu, Layers, Disc, Globe
+  Terminal, Send, FileCode, Folder, Shield,
+  Settings, Code2, Zap, Brain, Rocket,
+  Network, LayoutGrid, Cpu, Disc, Globe
 } from "lucide-react";
 
 /* ============================================================================
-   GitBrain (Synapse AI) — Next-Gen Bento-Box Hacker Cockpit
-   Fully revamped from standard GitHub UI to a futuristic Glassmorphism Dashboard
+   GitBrain (Synapse AI) — Matte Professional Next-Level Edition
+   Clean, sophisticated, flat/matte design language (Linear/Apple Pro style)
 ============================================================================ */
 
 export default function GitBrainNextGen() {
@@ -64,20 +64,22 @@ export default function GitBrainNextGen() {
   };
 
   return (
-    <div className="h-screen w-full bg-[#030308] text-gray-300 font-sans overflow-hidden flex selection:bg-cyan-500/30 relative z-0">
+    // bg-[#09090b] is a very deep matte zinc. No blurry neon orbs here.
+    <div className="h-screen w-full bg-[#09090b] text-[#A1A1AA] font-sans overflow-hidden flex relative z-0 selection:bg-indigo-500/30">
       
-      {/* 🌌 Background Ambient Mesh Gradients */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-600/10 blur-[120px] pointer-events-none z-[-1]" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[50%] rounded-full bg-purple-600/10 blur-[120px] pointer-events-none z-[-1]" />
-      <div className="absolute top-[30%] left-[40%] w-[30%] h-[30%] rounded-full bg-blue-600/5 blur-[100px] pointer-events-none z-[-1]" />
-
-      {/* 📌 Left Slim Navigation Dock (Glassmorphism) */}
-      <nav className="w-20 h-full border-r border-white/5 bg-white/[0.02] backdrop-blur-2xl flex flex-col items-center py-6 gap-8 z-10 shadow-2xl">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.4)]">
-          <Brain className="w-7 h-7 text-white" />
+      {/* Matte Texture Overlay (Subtle noise/grain) */}
+      <div 
+        className="absolute inset-0 z-[-1] opacity-20 pointer-events-none" 
+        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}
+      />
+      
+      {/* 📌 Left Slim Navigation Dock (Matte Flat) */}
+      <nav className="w-16 h-full border-r border-white/[0.04] bg-[#09090b] flex flex-col items-center py-6 gap-8 z-10">
+        <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+          <Brain className="w-5 h-5 text-indigo-400" />
         </div>
         
-        <div className="flex flex-col gap-6 mt-4">
+        <div className="flex flex-col gap-5 mt-4">
           <NavIcon icon={<Network />} id="neural-map" active={activeView} set={setActiveView} tooltip="Neural Map" />
           <NavIcon icon={<Code2 />} id="code" active={activeView} set={setActiveView} tooltip="Code Editor" />
           <NavIcon icon={<GitPullRequest />} id="prs" active={activeView} set={setActiveView} tooltip="Merge Engine" />
@@ -85,136 +87,135 @@ export default function GitBrainNextGen() {
           <NavIcon icon={<Shield />} id="security" active={activeView} set={setActiveView} tooltip="Security Audit" />
         </div>
 
-        <div className="mt-auto mb-4">
+        <div className="mt-auto mb-2">
           <NavIcon icon={<Settings />} id="settings" active={activeView} set={setActiveView} tooltip="Settings" />
         </div>
       </nav>
 
-      {/* 🎛️ Main Bento-Box Grid Area */}
-      <main className="flex-1 h-full p-4 grid grid-cols-12 grid-rows-6 gap-4 overflow-hidden z-10">
+      {/* 🎛️ Main Bento-Box Grid Area (Professional Spacing & Borders) */}
+      <main className="flex-1 h-full p-6 grid grid-cols-12 grid-rows-6 gap-6 overflow-hidden z-10">
         
         {/* Bento 1: Header / Project Info */}
-        <header className="col-span-8 row-span-1 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-md p-5 flex items-center justify-between shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-purple-500" />
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
-              <Globe className="w-6 h-6 text-cyan-400" />
+        <header className="col-span-8 row-span-1 rounded-xl bg-[#121214] border border-white/[0.04] p-5 flex items-center justify-between shadow-sm relative overflow-hidden">
+          <div className="flex items-center gap-4 z-10">
+            <div className="w-10 h-10 rounded-md bg-[#18181B] flex items-center justify-center border border-white/[0.04]">
+              <Globe className="w-5 h-5 text-[#D4D4D8]" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white tracking-wide">Synapse AI <span className="text-gray-500 font-normal">/ Core Services</span></h1>
-              <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+              <h1 className="text-lg font-medium text-[#FAFAFA] tracking-tight">Synapse AI <span className="text-[#71717A] font-normal">/ Core Services</span></h1>
+              <div className="flex items-center gap-3 mt-0.5 text-xs text-[#71717A] tracking-wide">
                 <span className="flex items-center gap-1"><GitBranch className="w-3 h-3" /> main</span>
                 <span className="flex items-center gap-1"><GitCommitHorizontal className="w-3 h-3" /> 4d572a9</span>
-                <span className="px-2 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20">Production</span>
+                <span className="px-2 py-0.5 rounded text-xs text-indigo-400/80 border border-indigo-400/20 bg-indigo-400/5">Production</span>
               </div>
             </div>
           </div>
-          <div className="flex gap-3">
-            <button className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-medium transition-all flex items-center gap-2">
-              <Disc className="w-4 h-4" /> Snapshot
+          <div className="flex gap-3 z-10">
+            <button className="px-4 py-2 rounded-lg bg-[#18181B] hover:bg-[#27272A] border border-white/[0.04] text-xs font-medium text-[#E4E4E7] transition-all flex items-center gap-2">
+              <Disc className="w-3.5 h-3.5" /> Snapshot
             </button>
-            <button className="px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-sm font-medium transition-all shadow-[0_0_15px_rgba(34,211,238,0.15)] flex items-center gap-2">
-              <Zap className="w-4 h-4" /> Deploy
+            <button className="px-4 py-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-400 text-xs font-medium transition-all flex items-center gap-2">
+              <Zap className="w-3.5 h-3.5" /> Deploy
             </button>
           </div>
         </header>
 
-        {/* Bento 2: Codebase Neural Map (Replacement for File List) */}
-        <section className="col-span-8 row-span-5 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-md flex flex-col relative overflow-hidden shadow-lg">
-          <div className="p-4 border-b border-white/5 flex items-center justify-between bg-black/20">
-            <h2 className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-              <Network className="w-4 h-4 text-purple-400" /> 3D Codebase Neural Map
+        {/* Bento 2: Codebase Neural Map (Matte/Sophisticated Variant) */}
+        <section className="col-span-8 row-span-5 rounded-xl bg-[#121214] border border-white/[0.04] flex flex-col relative overflow-hidden shadow-sm">
+          <div className="px-5 py-3 border-b border-white/[0.04] flex items-center justify-between bg-[#121214]">
+            <h2 className="text-xs font-medium text-[#E4E4E7] uppercase tracking-widest flex items-center gap-2">
+              <Network className="w-3.5 h-3.5 text-[#A1A1AA]" /> Architecture Map
             </h2>
-            <div className="flex gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-              <span className="w-2.5 h-2.5 rounded-full bg-purple-400" />
-              <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
+            <div className="flex gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#27272A]" />
+              <span className="w-2 h-2 rounded-full bg-[#27272A]" />
+              <span className="w-2 h-2 rounded-full bg-[#3F3F46]" />
             </div>
           </div>
           
-          <div className="flex-1 relative flex items-center justify-center p-8">
-            {/* Mocking a 3D Node Graph visually */}
-            <svg className="absolute inset-0 w-full h-full opacity-30" xmlns="http://www.w3.org/2000/svg">
-              <path d="M 200 150 Q 350 200 500 100 T 800 250" fill="transparent" stroke="url(#cyan-grad)" strokeWidth="2" strokeDasharray="5,5" className="animate-[dash_20s_linear_infinite]" />
-              <path d="M 200 150 Q 300 400 600 350 T 800 250" fill="transparent" stroke="url(#purple-grad)" strokeWidth="1.5" />
-              <defs>
-                <linearGradient id="cyan-grad"><stop offset="0%" stopColor="#22d3ee" stopOpacity="0" /><stop offset="50%" stopColor="#22d3ee" /><stop offset="100%" stopColor="#22d3ee" stopOpacity="0" /></linearGradient>
-                <linearGradient id="purple-grad"><stop offset="0%" stopColor="#c084fc" stopOpacity="0" /><stop offset="50%" stopColor="#c084fc" /><stop offset="100%" stopColor="#c084fc" stopOpacity="0" /></linearGradient>
-              </defs>
+          <div className="flex-1 relative flex items-center justify-center p-8 bg-[#09090B]/50">
+            {/* Elegant, thin, flat SVG lines */}
+            <svg className="absolute inset-0 w-full h-full opacity-40" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 200 150 Q 350 200 500 100 T 800 250" fill="transparent" stroke="#3F3F46" strokeWidth="1" strokeDasharray="4,4" className="animate-[dash_30s_linear_infinite]" />
+              <path d="M 200 150 Q 300 400 600 350 T 800 250" fill="transparent" stroke="#27272A" strokeWidth="1" />
             </svg>
 
-            {/* Nodes */}
-            <div className="absolute top-[20%] left-[20%] flex flex-col items-center gap-2 group cursor-pointer hover:scale-110 transition-transform">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-gray-800 to-gray-700 border border-white/10 flex items-center justify-center shadow-xl group-hover:border-cyan-400/50 group-hover:shadow-[0_0_20px_rgba(34,211,238,0.3)]">
-                <Folder className="w-8 h-8 text-cyan-400" />
+            {/* Nodes: Professional, flat, minimal */}
+            <div className="absolute top-[20%] left-[20%] flex flex-col items-center gap-3 group cursor-pointer">
+              <div className="w-12 h-12 rounded-lg bg-[#18181B] border border-white/[0.04] flex items-center justify-center group-hover:bg-[#27272A] transition-colors">
+                <Folder className="w-5 h-5 text-[#A1A1AA]" />
               </div>
-              <span className="text-xs text-gray-400 group-hover:text-cyan-400">services/</span>
+              <span className="text-[11px] text-[#71717A] tracking-wider group-hover:text-[#D4D4D8]">services/</span>
             </div>
 
-            <div className="absolute top-[40%] left-[50%] flex flex-col items-center gap-2 group cursor-pointer hover:scale-110 transition-transform z-10">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-gray-800 to-gray-700 border-2 border-purple-500/50 flex items-center justify-center shadow-[0_0_30px_rgba(168,85,247,0.3)]">
-                <Brain className="w-10 h-10 text-purple-400 animate-pulse" />
+            <div className="absolute top-[40%] left-[50%] flex flex-col items-center gap-3 group cursor-pointer z-10">
+              <div className="w-14 h-14 rounded-lg bg-[#18181B] border border-indigo-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.05)]">
+                <Brain className="w-6 h-6 text-indigo-400" />
               </div>
-              <span className="text-sm font-semibold text-purple-300">ai-orchestrator</span>
-              <div className="absolute -right-2 -top-2 w-4 h-4 bg-purple-500 rounded-full border-2 border-[#050510] animate-ping" />
+              <span className="text-xs font-medium text-[#E4E4E7] tracking-wide">ai-orchestrator</span>
+              <div className="absolute -right-1 -top-1 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-[#121214]" />
             </div>
 
-            <div className="absolute bottom-[20%] right-[30%] flex flex-col items-center gap-2 group cursor-pointer hover:scale-110 transition-transform">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-gray-800 to-gray-700 border border-white/10 flex items-center justify-center shadow-xl group-hover:border-blue-400/50">
-                <FileCode className="w-8 h-8 text-blue-400" />
+            <div className="absolute bottom-[20%] right-[30%] flex flex-col items-center gap-3 group cursor-pointer">
+              <div className="w-12 h-12 rounded-lg bg-[#18181B] border border-white/[0.04] flex items-center justify-center group-hover:bg-[#27272A] transition-colors">
+                <FileCode className="w-5 h-5 text-[#A1A1AA]" />
               </div>
-              <span className="text-xs text-gray-400 group-hover:text-blue-400">SynapseApp.tsx</span>
+              <span className="text-[11px] text-[#71717A] tracking-wider group-hover:text-[#D4D4D8]">SynapseApp.tsx</span>
             </div>
 
-            <div className="absolute top-[60%] left-[25%] flex flex-col items-center gap-2 group cursor-pointer hover:scale-110 transition-transform">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-gray-800 to-gray-700 border border-white/10 flex items-center justify-center shadow-xl group-hover:border-green-400/50">
-                <Cpu className="w-7 h-7 text-green-400" />
+            <div className="absolute top-[60%] left-[25%] flex flex-col items-center gap-3 group cursor-pointer">
+              <div className="w-12 h-12 rounded-lg bg-[#18181B] border border-white/[0.04] flex items-center justify-center group-hover:bg-[#27272A] transition-colors">
+                <Cpu className="w-5 h-5 text-[#A1A1AA]" />
               </div>
-              <span className="text-xs text-gray-400 group-hover:text-green-400">ci-runner</span>
+              <span className="text-[11px] text-[#71717A] tracking-wider group-hover:text-[#D4D4D8]">ci-runner</span>
             </div>
             
             <div className="absolute inset-x-0 bottom-6 flex justify-center">
-              <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md flex items-center gap-3 text-xs text-gray-400">
-                <Search className="w-4 h-4" /> Search neural map, files, or agents (Ctrl+K)
+              <div className="px-4 py-2 rounded-md bg-[#18181B] border border-white/[0.04] flex items-center gap-3 text-[11px] text-[#71717A] tracking-wide">
+                <Search className="w-3.5 h-3.5" /> Search neural map, files, or agents (Ctrl+K)
               </div>
             </div>
           </div>
         </section>
 
-        {/* Bento 3: Antigravity AI Console (Right Sidebar) */}
-        <section className="col-span-4 row-span-6 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-xl shadow-2xl flex flex-col relative overflow-hidden">
+        {/* Bento 3: Antigravity AI Console (Matte Right Sidebar) */}
+        <section className="col-span-4 row-span-6 rounded-xl bg-[#121214] border border-white/[0.04] shadow-sm flex flex-col relative overflow-hidden">
           {/* Header */}
-          <div className="p-4 border-b border-white/5 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent flex flex-col gap-4 relative">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-[50px]" />
-            <div className="flex items-center justify-between z-10">
-              <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                <Rocket className="w-4 h-4 text-purple-400" /> Antigravity AI Command
+          <div className="px-5 py-4 border-b border-white/[0.04] bg-[#121214] flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium text-[#FAFAFA] flex items-center gap-2">
+                <Rocket className="w-4 h-4 text-[#A1A1AA]" /> AI Command Center
               </h2>
-              <span className="text-[10px] uppercase tracking-widest text-cyan-400 font-semibold bg-cyan-400/10 px-2 py-0.5 rounded border border-cyan-400/20">Active</span>
+              <span className="text-[9px] uppercase tracking-widest text-indigo-400 font-semibold flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse" /> Active
+              </span>
             </div>
             
-            {/* Agent Selector (Floating Orbs style) */}
-            <div className="flex gap-2 z-10 p-1 bg-black/40 rounded-xl border border-white/5">
-              <AgentTab id="pm" active={activeAgent} set={setActiveAgent} icon={<Brain className="w-4 h-4" />} label="Project Mgr" color="text-purple-400" bg="bg-purple-400/20" />
-              <AgentTab id="reviewer" active={activeAgent} set={setActiveAgent} icon={<Search className="w-4 h-4" />} label="Reviewer" color="text-blue-400" bg="bg-blue-400/20" />
-              <AgentTab id="cifixer" active={activeAgent} set={setActiveAgent} icon={<Zap className="w-4 h-4" />} label="CI Fixer" color="text-green-400" bg="bg-green-400/20" />
+            {/* Agent Selector (Minimal, Flat Tabs) */}
+            <div className="flex gap-1 p-1 bg-[#09090B] rounded-lg border border-white/[0.02]">
+              <AgentTab id="pm" active={activeAgent} set={setActiveAgent} label="PM Agent" />
+              <AgentTab id="reviewer" active={activeAgent} set={setActiveAgent} label="Reviewer" />
+              <AgentTab id="cifixer" active={activeAgent} set={setActiveAgent} label="CI Fixer" />
             </div>
           </div>
 
           {/* Trajectory Stream */}
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 scrollbar-hide" ref={chatRef}>
-            {trajectory.map((msg, idx) => (
-              <div key={msg.id} className={`flex gap-3 ${msg.agent === 'User' ? 'flex-row-reverse' : 'flex-row'} items-end group`}>
-                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                  {msg.agent === 'User' ? <div className="w-5 h-5 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500" /> : <BotIcon agent={msg.agent} status={msg.status} />}
-                </div>
+          <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5 scrollbar-hide" ref={chatRef}>
+            {trajectory.map((msg) => (
+              <div key={msg.id} className={`flex gap-3 ${msg.agent === 'User' ? 'flex-row-reverse' : 'flex-row'} items-start group`}>
                 
-                <div className={`flex flex-col gap-1 max-w-[80%] ${msg.agent === 'User' ? 'items-end' : 'items-start'}`}>
-                  <span className="text-[10px] text-gray-500 font-mono tracking-wider">{msg.agent} • {msg.time}</span>
-                  <div className={`p-3 rounded-2xl text-sm leading-relaxed border ${
+                {msg.agent !== 'User' && (
+                  <div className="w-6 h-6 rounded-md bg-[#18181B] border border-white/[0.04] flex items-center justify-center shrink-0 mt-1">
+                    <BotIcon agent={msg.agent} status={msg.status} />
+                  </div>
+                )}
+                
+                <div className={`flex flex-col gap-1.5 max-w-[85%] ${msg.agent === 'User' ? 'items-end' : 'items-start'}`}>
+                  <span className="text-[10px] text-[#52525B] font-medium tracking-wide uppercase">{msg.agent} • {msg.time}</span>
+                  <div className={`py-2 px-3.5 text-[13px] leading-relaxed rounded-lg ${
                     msg.agent === 'User' 
-                      ? 'bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border-cyan-500/30 text-cyan-50 rounded-br-sm'
-                      : 'bg-white/5 border-white/5 text-gray-300 rounded-bl-sm'
+                      ? 'bg-[#27272A] text-[#FAFAFA]'
+                      : 'bg-[#18181B] text-[#D4D4D8] border border-white/[0.04]'
                   }`}>
                     {msg.action}
                   </div>
@@ -224,28 +225,28 @@ export default function GitBrainNextGen() {
           </div>
 
           {/* Context/Action Chips */}
-          <div className="px-4 pb-2 flex gap-2 overflow-x-auto scrollbar-hide">
+          <div className="px-5 pb-3 flex gap-2 overflow-x-auto scrollbar-hide pt-2">
              <ActionChip icon={<LayoutGrid />} label="/snapshot" onClick={() => setInputMessage("/snapshot")} />
              <ActionChip icon={<GitMerge />} label="/semantic-merge" onClick={() => setInputMessage("/semantic-merge")} />
              <ActionChip icon={<Terminal />} label="/fix-issue" onClick={() => setInputMessage("/fix-issue")} />
           </div>
 
           {/* Chat Input */}
-          <div className="p-4 pt-2 border-t border-white/5 bg-black/20">
+          <div className="p-4 pt-0 border-t border-white/[0.04] bg-[#121214] mt-2">
             <form onSubmit={handleSendMessage} className="relative flex items-center">
               <input 
                 type="text" 
                 value={inputMessage}
                 onChange={e => setInputMessage(e.target.value)}
-                placeholder="Give autonomous instructions..." 
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:bg-white/10 transition-all shadow-inner"
+                placeholder="Instruct the AI system..." 
+                className="w-full bg-[#09090B] border border-white/[0.06] rounded-lg py-2.5 pl-3 pr-10 text-sm text-[#FAFAFA] placeholder-[#52525B] focus:outline-none focus:border-indigo-500/30 transition-all"
               />
               <button 
                 type="submit" 
                 disabled={!inputMessage.trim()}
-                className="absolute right-2 w-8 h-8 flex items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500 hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-cyan-500/20 disabled:hover:text-cyan-400"
+                className="absolute right-2 w-7 h-7 flex items-center justify-center rounded-md bg-[#18181B] text-[#A1A1AA] hover:bg-[#27272A] hover:text-[#FAFAFA] transition-colors disabled:opacity-40 disabled:hover:bg-[#18181B]"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-3.5 h-3.5" />
               </button>
             </form>
           </div>
@@ -270,46 +271,45 @@ function NavIcon({ icon, id, active, set, tooltip }: any) {
   return (
     <button 
       onClick={() => set(id)}
-      className={`relative w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 group ${
-        isActive ? 'bg-white/10 text-white shadow-lg' : 'text-gray-500 hover:text-gray-200 hover:bg-white/5'
+      className={`relative w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 group ${
+        isActive ? 'bg-[#18181B] text-[#FAFAFA] border border-white/[0.04]' : 'text-[#71717A] hover:text-[#D4D4D8] hover:bg-[#18181B]'
       }`}
       title={tooltip}
     >
-      {icon}
+      {React.cloneElement(icon, { className: "w-5 h-5" })}
       {isActive && (
-        <span className="absolute -left-1 w-1 h-6 rounded-r-md bg-cyan-400 shadow-[0_0_10px_#22d3ee]" />
+        <span className="absolute -left-1.5 w-1 h-5 rounded-r-md bg-indigo-500" />
       )}
     </button>
   );
 }
 
-function AgentTab({ id, active, set, icon, label, color, bg }: any) {
+function AgentTab({ id, active, set, label }: any) {
   const isActive = active === id;
   return (
     <button
       onClick={() => set(id)}
-      className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-all ${
-        isActive ? `${bg} ${color} shadow-inner` : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+      className={`flex-1 flex items-center justify-center py-1.5 px-2 rounded-md text-[11px] font-medium transition-all ${
+        isActive ? 'bg-[#27272A] text-[#FAFAFA] shadow-sm' : 'text-[#71717A] hover:text-[#A1A1AA]'
       }`}
     >
-      {icon} <span className="hidden sm:inline">{label}</span>
+      {label}
     </button>
   );
 }
 
 function BotIcon({ agent, status }: any) {
-  let Color = "text-purple-400";
   let Icon = Brain;
-  if (agent.includes("Reviewer")) { Color = "text-blue-400"; Icon = Search; }
-  if (agent.includes("Fixer")) { Color = "text-green-400"; Icon = Zap; }
+  if (agent.includes("Reviewer")) Icon = Search;
+  if (agent.includes("Fixer")) Icon = Zap;
 
   return (
-    <div className={`relative ${Color}`}>
-      <Icon className="w-4 h-4" />
+    <div className="relative text-[#A1A1AA]">
+      <Icon className="w-3.5 h-3.5" />
       {status === 'running' && (
-        <span className="absolute -top-1 -right-1 flex h-2 w-2">
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-current`}></span>
-          <span className={`relative inline-flex rounded-full h-2 w-2 bg-current`}></span>
+        <span className="absolute -top-1 -right-1 flex h-1.5 w-1.5">
+          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-indigo-400`}></span>
+          <span className={`relative inline-flex rounded-full h-1.5 w-1.5 bg-indigo-500`}></span>
         </span>
       )}
     </div>
@@ -318,7 +318,7 @@ function BotIcon({ agent, status }: any) {
 
 function ActionChip({ icon, label, onClick }: any) {
   return (
-    <button onClick={onClick} className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 text-xs text-gray-400 hover:text-white transition-colors cursor-pointer">
+    <button onClick={onClick} className="whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#18181B] hover:bg-[#27272A] border border-white/[0.04] text-[11px] text-[#A1A1AA] hover:text-[#FAFAFA] transition-colors cursor-pointer">
       {React.cloneElement(icon, { className: "w-3 h-3" })} {label}
     </button>
   );
