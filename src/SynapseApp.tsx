@@ -63,6 +63,8 @@ const INIT_STREAM = [
 type MsgStatus = "running" | "done" | "error";
 interface Msg { id: string; agent: string; time: string; action: string; status: MsgStatus }
 
+const easeOut = { duration: 0.3, ease: [0.16, 1, 0.3, 1] };
+
 export default function GitBrainApp() {
   const [activeNav, setActiveNav] = useState("dashboard");
   const [activeAgent, setActiveAgent] = useState("pm");
