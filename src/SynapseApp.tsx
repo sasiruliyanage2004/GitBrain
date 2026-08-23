@@ -201,7 +201,7 @@ export default function GitBrainApp() {
   };
 
   return (
-    <div className="h-[100dvh] w-full flex flex-col md:flex-row relative select-none">
+    <div className="h-[100dvh] w-full flex flex-col md:flex-row relative z-10 select-none">
       {/* Toast Notification */}
       <AnimatePresence>
         {toast && (
