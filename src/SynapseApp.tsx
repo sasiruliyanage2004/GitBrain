@@ -1,581 +1,822 @@
-import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import {
+  motion, AnimatePresence, useSpring, useMotionValue,
+  useTransform, LayoutGroup, useInView
+} from "framer-motion";
 import {
   Search, GitBranch, GitCommitHorizontal, GitPullRequest, GitMerge,
-  Terminal, Send, FileCode, Folder, Shield, Activity,
-  Settings, Code2, Zap, Brain, Rocket, Play, ChevronRight,
-  Network, LayoutGrid, Cpu, Disc, Globe, Check,
-  Command, RefreshCw, Lock, AlertCircle, Copy, CheckCircle2, X, Bell, Moon, Sun, User
+  Send, FileCode, Shield, Code2, Zap, Brain, Rocket, Play,
+  Network, LayoutGrid, Cpu, Disc, Globe, CheckCircle2, X, Bell,
+  RefreshCw, AlertCircle, Settings, Command, ArrowUpRight,
+  Layers, Activity, TrendingUp, Clock, ChevronRight, Sparkles, Bot
 } from "lucide-react";
 
-/* ============================================================================
-   GitBrain 5.0 — Electric Indigo Developer AI Cockpit
-   Option 1: Obsidian & Indigo/Violet (Cursor/Linear Style)
-   Combining GoRide's Matte Texture & Mouse Spotlight with a pure Dev Workspace.
-============================================================================ */
+/* ============================================================
+   GitBrain 6.0 — World-Class AI Developer Cockpit
+   Designed at senior product engineer level.
+   Framer Motion spring physics + proper design tokens.
+   ============================================================ */
 
-const AGENTS = [
-  { id: "pm", label: "Project Mgr", icon: Brain, color: "#6366F1", bg: "rgba(99,102,241,0.12)" },
-  { id: "reviewer", label: "Reviewer", icon: Search, color: "#8B5CF6", bg: "rgba(139,92,246,0.12)" },
-  { id: "cifixer", label: "CI Fixer", icon: Zap, color: "#3B82F6", bg: "rgba(59,130,246,0.12)" },
+// ── Design constants ──────────────────────────────────────────
+const SPRING = { type: "spring", stiffness: 380, damping: 28 };
+const EASE   = { duration: 0.35, ease: [0.16, 1, 0.3, 1] } as const;
+const STAGGER = (i: number) => ({ delay: i * 0.06, ...EASE });
+
+// ── Types ──────────────────────────────────────────────────────
+type NavId = "map" | "code" | "prs" | "ci" | "security" | "settings";
+type AgentId = "pm" | "reviewer" | "cifixer";
+type MsgStatus = "running" | "done" | "error";
+interface Msg { id: string; agentId: AgentId | "user"; text: string; ts: string; status: MsgStatus }
+
+// ── Static data ────────────────────────────────────────────────
+const AGENTS: { id: AgentId; label: string; icon: React.ComponentType<any>; color: string; accent: string }[] = [
+  { id: "pm",       label: "Project Manager", icon: Brain,  color: "#818CF8", accent: "rgba(99,102,241,0.15)"  },
+  { id: "reviewer", label: "Code Reviewer",   icon: Search, color: "#A78BFA", accent: "rgba(139,92,246,0.15)" },
+  { id: "cifixer",  label: "CI Fixer",        icon: Zap,    color: "#38BDF8", accent: "rgba(56,189,248,0.15)" },
 ];
 
-const FILE_NODES = [
-  { id: "ai-orchestrator", label: "ai-orchestrator", icon: Brain, x: "48%", y: "38%", color: "#6366F1", ring: true, path: "services/ai-orchestrator-service/server.js" },
-  { id: "api-gateway", label: "api-gateway", icon: Network, x: "20%", y: "24%", color: "#8B5CF6", ring: false, path: "services/api-gateway/server.js" },
-  { id: "SynapseApp.tsx", label: "SynapseApp.tsx", icon: FileCode, x: "72%", y: "58%", color: "#A855F7", ring: false, path: "src/SynapseApp.tsx" },
-  { id: "ci-runner", label: "ci-runner", icon: Cpu, x: "24%", y: "64%", color: "#3B82F6", ring: false, path: "services/ci-runner-service/server.js" },
-  { id: "vcs-storage", label: "vcs-storage", icon: Shield, x: "68%", y: "24%", color: "#EC4899", ring: false, path: "services/vcs-storage-service/server.js" },
-];
+const MOCK_FILES: Record<string, { lang: string; code: string }> = {
+  "SynapseApp.tsx": { lang: "tsx", code: `// GitBrain 6.0 — World-Class AI Developer Cockpit
+import { motion } from "framer-motion";
+import { Brain } from "lucide-react";
 
-const MOCK_FILES: Record<string, string> = {
-  "src/SynapseApp.tsx": `// GitBrain Studio — Obsidian & Electric Indigo AI Cockpit
-import React from 'react';
 export default function GitBrainApp() {
-  return <div className="indigo-cockpit">GitBrain AI Studio</div>;
-}`,
-  "services/api-gateway/server.js": `import express from 'express';
-const app = express();
-app.use('/api/vcs', vcsProxy);
-app.use('/api/ai', aiProxy);
-app.listen(8000);`,
-  "services/ai-orchestrator-service/server.js": `import express from 'express';
-const app = express();
-app.post('/chat', (req, res) => {
-  res.json({ reply: "Autonomous PM reasoning engine operational." });
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="cockpit bg-[#060608]"
+    >
+      <Brain className="w-5 h-5 text-indigo-400" />
+      <span>GitBrain AI Studio</span>
+    </motion.div>
+  );
+}` },
+  "ai-orchestrator/server.ts": { lang: "ts", code: `import Fastify from "fastify";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const app = Fastify({ logger: true });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+
+app.post("/chat", async (req, reply) => {
+  const { message } = req.body as { message: string };
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const result = await model.generateContent(message);
+  reply.send({ reply: result.response.text() });
 });
-app.listen(8002);`,
-  "README.md": `# GitBrain (Synapse AI)
-Autonomous AI Project Manager & Native Version Control Platform`
+
+app.listen({ port: 8002 });` },
 };
 
-const MOCK_PRS = [
-  { id: "214", title: "feat: Add AST-aware semantic 3-way merge solver", author: "Sasiru Liyanage", branch: "feature/semantic-merge", status: "open", diffLines: "+142 -12" },
-  { id: "215", title: "fix: Handle network timeout retries in CI runner", author: "copilot-bot", branch: "fix/ci-timeouts", status: "open", diffLines: "+28 -4" }
+const NODES = [
+  { id: "ai", label: "ai-orchestrator", icon: Brain,   x: "50%", y: "40%", c: "#818CF8", r: true  },
+  { id: "gw", label: "api-gateway",     icon: Network, x: "18%", y: "22%", c: "#38BDF8", r: false },
+  { id: "ui", label: "SynapseApp.tsx",  icon: FileCode, x:"74%", y: "60%", c: "#A78BFA", r: false },
+  { id: "ci", label: "ci-runner",       icon: Cpu,     x: "22%", y: "66%", c: "#34D399", r: false },
+  { id: "vc", label: "vcs-storage",     icon: Shield,  x: "70%", y: "22%", c: "#F59E0B", r: false },
 ];
 
-const INIT_STREAM = [
-  { id: "1", agent: "pm", time: "22:02", action: "Analyzing repository architecture and dependency graph...", status: "done" as const },
-  { id: "2", agent: "reviewer", time: "22:03", action: "PR #214 — AST cross-check passed. Flagged 2 async race conditions.", status: "done" as const },
-  { id: "3", agent: "cifixer", time: "22:05", action: "Pipeline run #1042 running typecheck on feature/payments-v2...", status: "running" as const },
+const INIT_MSGS: Msg[] = [
+  { id: "1", agentId: "pm",       text: "Analyzing repository architecture and dependency graph…", ts: "10:02", status: "done"    },
+  { id: "2", agentId: "reviewer", text: "PR #214 — AST cross-check passed. 2 async race conditions flagged.", ts: "10:03", status: "done" },
+  { id: "3", agentId: "cifixer",  text: "Pipeline #1042: running strict-mode typecheck on feature/payments-v2…", ts: "10:05", status: "running" },
 ];
 
-type MsgStatus = "running" | "done" | "error";
-interface Msg { id: string; agent: string; time: string; action: string; status: MsgStatus }
+const METRICS = [
+  { label: "Active Branches",    value: "3",     delta: "+1",   up: true,  icon: GitBranch,      accent: "#818CF8" },
+  { label: "Open Pull Requests", value: "2",     delta: "PRs",  up: true,  icon: GitPullRequest, accent: "#A78BFA" },
+  { label: "CI Pass Rate",       value: "100%",  delta: "+8%",  up: true,  icon: CheckCircle2,   accent: "#34D399" },
+  { label: "Security Alerts",    value: "0",     delta: "Clear",up: true,  icon: Shield,         accent: "#F59E0B" },
+];
 
-const easeOut = { duration: 0.3, ease: [0.16, 1, 0.3, 1] };
-
+// ── Root ──────────────────────────────────────────────────────
 export default function GitBrainApp() {
-  const [activeNav, setActiveNav] = useState("map");
-  const [activeAgent, setActiveAgent] = useState("pm");
-  const [msgs, setMsgs] = useState<Msg[]>(INIT_STREAM);
-  const [input, setInput] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
-  const [selectedFile, setSelectedFile] = useState("src/SynapseApp.tsx");
-  const [cmdSearchOpen, setCmdSearchOpen] = useState(false);
-  const [ciLogs, setCiLogs] = useState<string[]>([
-    "[INFO] Synapse Virtual Runner v3.2 ready.",
-    "[READY] Waiting for pipeline triggers..."
-  ]);
+  const [nav, setNav]           = useState<NavId>("map");
+  const [agent, setAgent]       = useState<AgentId>("pm");
+  const [msgs, setMsgs]         = useState<Msg[]>(INIT_MSGS);
+  const [input, setInput]       = useState("");
+  const [sending, setSending]   = useState(false);
+  const [toast, setToast]       = useState<{ msg: string; ok: boolean } | null>(null);
+  const [file, setFile]         = useState("SynapseApp.tsx");
+  const [palette, setPalette]   = useState(false);
+  const [ciLogs, setCiLogs]     = useState(["[READY] Synapse Runner v3.2 waiting…"]);
   const [ciRunning, setCiRunning] = useState(false);
-  const [prs, setPrs] = useState(MOCK_PRS);
-
+  const [prs, setPrs]           = useState([
+    { id: "214", title: "feat: Semantic 3-way AST merge engine", author: "Sasiru Liyanage", branch: "feature/semantic-merge", status: "open",   diff: "+142 / -12" },
+    { id: "215", title: "fix: CI runner network timeout retries",  author: "copilot-bot",      branch: "fix/ci-timeouts",       status: "open",   diff: "+28 / -4"  },
+  ]);
   const chatRef = useRef<HTMLDivElement>(null);
 
-  // Mouse spotlight listener from GoRide
+  // Mouse spotlight
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
-      document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+    const h = (e: MouseEvent) => {
+      document.documentElement.style.setProperty("--mx", `${e.clientX}px`);
+      document.documentElement.style.setProperty("--my", `${e.clientY}px`);
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", h);
+    return () => window.removeEventListener("mousemove", h);
   }, []);
 
+  // ⌘K
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        setCmdSearchOpen(prev => !prev);
-      }
+    const h = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setPalette(p => !p); }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
   }, []);
 
-  const showToast = (message: string, type: "success" | "error" | "info" = "info") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3500);
-  };
+  const notify = (msg: string, ok = true) => { setToast({ msg, ok }); setTimeout(() => setToast(null), 3200); };
+  const scrollBottom = () => setTimeout(() => chatRef.current?.scrollTo({ top: 9999, behavior: "smooth" }), 60);
 
-  const scrollToBottom = () => {
-    setTimeout(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, 80);
-  };
-
-  const sendMessage = async (e: React.FormEvent) => {
+  const sendMsg = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isSending) return;
-    const userMsg = input;
-    const pendingId = Date.now().toString();
-    setInput("");
-    setIsSending(true);
-    setMsgs(p => [
-      ...p,
-      { id: Date.now().toString(), agent: "user", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), action: userMsg, status: "done" },
-      { id: pendingId, agent: "pm", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), action: "Querying API Gateway...", status: "running" }
+    if (!input.trim() || sending) return;
+    const userText = input;
+    const pendId = `p${Date.now()}`;
+    setInput(""); setSending(true);
+    setMsgs(m => [...m,
+      { id: `u${Date.now()}`, agentId: "user", text: userText, ts: now(), status: "done" },
+      { id: pendId,           agentId: "pm",   text: "Querying Antigravity Core…",          ts: now(), status: "running" },
     ]);
-    scrollToBottom();
+    scrollBottom();
     try {
-      const res = await fetch("http://localhost:8000/api/ai/chat", {
+      const r = await fetch("http://localhost:8000/api/ai/chat", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMsg })
+        body: JSON.stringify({ message: userText }),
       });
-      const data = await res.json();
-      setMsgs(p => p.map(m => m.id === pendingId ? { ...m, status: "done", action: data.reply || "Task complete." } : m));
+      const d = await r.json();
+      setMsgs(m => m.map(x => x.id === pendId ? { ...x, status: "done", text: d.reply || "Task complete." } : x));
     } catch {
-      setMsgs(p => p.map(m => m.id === pendingId ? { ...m, status: "error", action: "⚠ API Gateway offline. Make sure start-all.bat is running." } : m));
+      setMsgs(m => m.map(x => x.id === pendId ? { ...x, status: "error", text: "⚠ API Gateway offline. Start backend services first." } : x));
     }
-    setIsSending(false);
-    scrollToBottom();
+    setSending(false); scrollBottom();
   };
 
-  const handleTakeSnapshot = async () => {
-    showToast("Capturing cryptographic SHA-256 snapshot...", "info");
+  const takeSnapshot = async () => {
+    notify("Capturing SHA-256 cryptographic snapshot…", true);
     try {
-      const res = await fetch("http://localhost:8000/api/vcs/snapshots", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "Manual Snapshot", author: "Sasiru Liyanage", files: MOCK_FILES })
+      const r = await fetch("http://localhost:8000/api/vcs/snapshots", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Cockpit Snapshot", author: "Sasiru Liyanage", files: {} }),
       });
-      const data = await res.json();
-      if (data.success) {
-        showToast(`Snapshot created: ${data.snapshot.hash.slice(0, 15)}...`, "success");
-      }
-    } catch {
-      showToast("VCS Service Offline. Local snapshot saved.", "info");
-    }
+      const d = await r.json();
+      if (d.success) notify(`Snapshot: ${d.snapshot.hash.slice(0, 14)}… captured`, true);
+    } catch { notify("Snapshot saved (offline mode)", true); }
   };
 
-  const handleRunPipeline = async () => {
-    setCiRunning(true);
-    showToast("Executing Virtual CI/CD Pipeline...", "info");
+  const runPipeline = async () => {
+    setCiRunning(true); notify("Launching CI/CD virtual sandbox…", true);
     try {
-      const res = await fetch("http://localhost:8000/api/ci/pipeline/run", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ workflowName: "GitBrain Build & Test", branch: "main" })
+      const r = await fetch("http://localhost:8000/api/ci/pipeline/run", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workflowName: "GitBrain Build & Test", branch: "main" }),
       });
-      const data = await res.json();
-      if (data.logs) {
-        setCiLogs(data.logs);
-        showToast("CI Pipeline passed! 100% test coverage.", "success");
-      }
+      const d = await r.json();
+      if (d.logs) { setCiLogs(d.logs); notify("All checks passed ✓", true); }
     } catch {
-      setCiLogs([
-        "[INFO] Synapse Virtual Sandbox Runner",
-        "[STEP 1/3] TypeScript Typecheck: PASS",
-        "[STEP 2/3] Unit Tests: 10/10 PASS",
-        "[STATUS] Build verified successfully."
-      ]);
-      showToast("Pipeline verified (Offline Mode).", "success");
+      setCiLogs(["[STEP 1/3] TypeScript: PASS", "[STEP 2/3] Unit Tests 10/10: PASS", "[STATUS] Build verified (offline mode)"]);
+      notify("Pipeline verified ✓", true);
     }
     setCiRunning(false);
   };
 
-  const handleSemanticMerge = async (prId: string) => {
-    showToast(`Executing AI AST 3-Way Merge for PR #${prId}...`, "info");
+  const mergePr = async (prId: string) => {
+    notify(`AI semantic merge for PR #${prId}…`, true);
     try {
-      const res = await fetch("http://localhost:8000/api/ai/semantic-merge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileName: "payments.ts", baseCode: "", incomingCode: "" })
+      const r = await fetch("http://localhost:8000/api/ai/semantic-merge", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileName: "payments.ts", baseCode: "", incomingCode: "" }),
       });
-      const data = await res.json();
-      if (data.success) {
-        setPrs(p => p.map(pr => pr.id === prId ? { ...pr, status: "merged" } : pr));
-        showToast(`PR #${prId} Merged with ${data.confidenceScore}% AI Confidence!`, "success");
-      }
-    } catch {
-      setPrs(p => p.map(pr => pr.id === prId ? { ...pr, status: "merged" } : pr));
-      showToast(`PR #${prId} Merged cleanly!`, "success");
-    }
+      const d = await r.json();
+      if (d.success) { setPrs(p => p.map(x => x.id === prId ? { ...x, status: "merged" } : x)); notify(`PR #${prId} merged (${d.confidenceScore}% AI confidence)`, true); }
+    } catch { setPrs(p => p.map(x => x.id === prId ? { ...x, status: "merged" } : x)); notify(`PR #${prId} merged cleanly ✓`, true); }
   };
 
   return (
-    <div className="h-[100dvh] w-full flex flex-col md:flex-row relative z-10 select-none">
-      {/* Toast Notification */}
+    <div className="h-[100dvh] w-full flex flex-col md:flex-row overflow-hidden relative z-10">
+
+      {/* ── Ambient spotlight ── */}
+      <div className="pointer-events-none fixed inset-0 z-0" style={{
+        background: "radial-gradient(600px circle at var(--mx, 50vw) var(--my, 50vh), rgba(99,102,241,0.07) 0%, transparent 60%)"
+      }} />
+
+      {/* ── Toast ── */}
       <AnimatePresence>
         {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+          <motion.div key="toast"
+            initial={{ opacity: 0, y: -16, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="absolute top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl border flex items-center gap-2.5 text-xs shadow-2xl backdrop-blur-md"
+            exit={{ opacity: 0, y: -16, scale: 0.95 }}
+            transition={EASE}
+            className="fixed top-5 left-1/2 -translate-x-1/2 z-[999] flex items-center gap-2.5 px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-2xl backdrop-blur-xl"
             style={{
-              background: toast.type === "success" ? "rgba(16,185,129,0.15)" : toast.type === "error" ? "rgba(244,63,94,0.15)" : "rgba(99,102,241,0.15)",
-              borderColor: toast.type === "success" ? "rgba(16,185,129,0.4)" : toast.type === "error" ? "rgba(244,63,94,0.4)" : "rgba(99,102,241,0.4)",
-              color: toast.type === "success" ? "#34D399" : toast.type === "error" ? "#FDA4AF" : "#A5B4FC"
+              background: toast.ok ? "rgba(16,185,129,0.12)" : "rgba(244,63,94,0.12)",
+              border: `1px solid ${toast.ok ? "rgba(52,211,153,0.3)" : "rgba(244,63,94,0.3)"}`,
+              color: toast.ok ? "#34D399" : "#FB7185",
             }}
           >
-            {toast.type === "success" ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <AlertCircle className="w-4 h-4 text-indigo-400" />}
-            <span className="font-semibold">{toast.message}</span>
+            {toast.ok ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
+            {toast.msg}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Command Palette Modal (⌘K) */}
+      {/* ── Command Palette ── */}
       <AnimatePresence>
-        {cmdSearchOpen && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4" onClick={() => setCmdSearchOpen(false)}>
+        {palette && (
+          <motion.div key="pal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[998] flex items-start justify-center pt-[20vh]"
+            style={{ background: "rgba(6,6,8,0.8)", backdropFilter: "blur(16px)" }}
+            onClick={() => setPalette(false)}
+          >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, y: -20, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.96 }}
+              transition={EASE}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-lg glass-panel p-4 flex flex-col gap-3"
+              className="card w-full max-w-md shadow-2xl overflow-hidden"
             >
-              <div className="flex items-center gap-3 border-b border-[#222436] pb-3">
-                <Search className="w-4 h-4 text-[#64748B]" />
-                <input
-                  type="text"
-                  autoFocus
-                  placeholder="Search commands or files..."
-                  className="bg-transparent flex-1 text-sm text-white focus:outline-none"
-                />
-                <button onClick={() => setCmdSearchOpen(false)} className="text-[#64748B] hover:text-white"><X className="w-4 h-4" /></button>
+              <div className="flex items-center gap-3 px-4 py-3 border-b" style={{ borderColor: "var(--border)" }}>
+                <Search size={15} className="text-zinc-500" />
+                <input autoFocus placeholder="Type a command…" className="flex-1 bg-transparent text-sm text-white outline-none placeholder-zinc-600" />
+                <kbd className="text-[10px] px-1.5 py-0.5 rounded border text-zinc-500" style={{ borderColor: "var(--border)", background: "var(--surface-3)" }}>ESC</kbd>
               </div>
-              <div className="flex flex-col gap-1 text-xs text-[#94A3B8]">
-                <button onClick={() => { setActiveNav("map"); setCmdSearchOpen(false); }} className="p-2.5 rounded-lg hover:bg-white/5 flex items-center justify-between text-left">
-                  <span>🗺️ 3D Codebase Architecture Map</span>
-                  <span className="text-[10px] text-[#64748B]">View</span>
-                </button>
-                <button onClick={() => { setActiveNav("code"); setCmdSearchOpen(false); }} className="p-2.5 rounded-lg hover:bg-white/5 flex items-center justify-between text-left">
-                  <span>💻 Code Editor & Files</span>
-                  <span className="text-[10px] text-[#64748B]">View</span>
-                </button>
-                <button onClick={() => { setActiveNav("prs"); setCmdSearchOpen(false); }} className="p-2.5 rounded-lg hover:bg-white/5 flex items-center justify-between text-left">
-                  <span>🔀 Manage Pull Requests</span>
-                  <span className="text-[10px] text-[#64748B]">View</span>
-                </button>
-                <button onClick={() => { handleTakeSnapshot(); setCmdSearchOpen(false); }} className="p-2.5 rounded-lg hover:bg-white/5 flex items-center justify-between text-left">
-                  <span>📸 Trigger Cryptographic Snapshot</span>
-                  <span className="text-[10px] text-[#64748B]">Action</span>
-                </button>
+              <div className="py-2">
+                {[
+                  { icon: Network,        label: "View Architecture Map",      action: () => { setNav("map");      setPalette(false); } },
+                  { icon: Code2,          label: "Open Code Editor",           action: () => { setNav("code");     setPalette(false); } },
+                  { icon: GitPullRequest, label: "Manage Pull Requests",       action: () => { setNav("prs");      setPalette(false); } },
+                  { icon: Disc,           label: "Take Cryptographic Snapshot",action: () => { takeSnapshot();     setPalette(false); } },
+                  { icon: Play,           label: "Run CI/CD Pipeline",         action: () => { runPipeline();      setPalette(false); } },
+                ].map((item, i) => (
+                  <motion.button key={i} onClick={item.action}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={STAGGER(i)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/[0.04] transition-colors text-left"
+                  >
+                    <item.icon size={14} className="shrink-0 text-indigo-400" />
+                    {item.label}
+                  </motion.button>
+                ))}
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ==================== NARROW DEVELOPER ICON DOCK (Cursor/Linear Style) ==================== */}
-      <nav className="
-        w-full h-14 md:w-16 md:h-full
-        bg-[#08080A] border-t md:border-t-0 md:border-r border-[#222436]
-        flex flex-row md:flex-col items-center justify-around md:justify-start
-        md:py-6 md:gap-5 z-20 shrink-0 order-last md:order-first
-      ">
-        <div className="hidden md:flex w-10 h-10 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] items-center justify-center shadow-lg shadow-indigo-950/50 mb-2">
-          <Brain className="w-5 h-5 text-white" />
+      {/* ── LEFT ICON RAIL ── */}
+      <motion.nav
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.05, ...EASE }}
+        className="hidden md:flex w-[60px] h-full flex-col items-center py-5 gap-2 shrink-0 border-r"
+        style={{ background: "var(--surface-1)", borderColor: "var(--border)" }}
+      >
+        {/* Logo */}
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 shadow-lg relative overflow-hidden"
+          style={{ background: "linear-gradient(135deg,#6366F1,#8B5CF6)", boxShadow: "0 4px 20px rgba(99,102,241,0.4)" }}>
+          <Brain size={18} className="text-white relative z-10" />
+          <div className="absolute inset-0 shimmer" />
         </div>
 
-        <div className="flex flex-row md:flex-col gap-1.5 md:gap-3 w-full md:w-auto px-2 justify-around md:justify-start">
-          <DockIcon icon={<Network className="w-5 h-5" />} label="Neural Map" active={activeNav === "map"} onClick={() => setActiveNav("map")} />
-          <DockIcon icon={<Code2 className="w-5 h-5" />} label="Code Editor" active={activeNav === "code"} onClick={() => setActiveNav("code")} />
-          <DockIcon icon={<GitPullRequest className="w-5 h-5" />} label="Pull Requests" active={activeNav === "prs"} onClick={() => setActiveNav("prs")} />
-          <DockIcon icon={<Play className="w-5 h-5" />} label="CI Workflows" active={activeNav === "ci"} onClick={() => setActiveNav("ci")} />
-          <DockIcon icon={<Shield className="w-5 h-5" />} label="Security Scan" active={activeNav === "security"} onClick={() => setActiveNav("security")} />
-        </div>
+        {/* Nav icons */}
+        <LayoutGroup>
+          {([ 
+            { id: "map",      icon: Network,        tip: "Architecture Map" },
+            { id: "code",     icon: Code2,          tip: "Code Editor" },
+            { id: "prs",      icon: GitPullRequest, tip: "Pull Requests" },
+            { id: "ci",       icon: Play,           tip: "CI Sandbox" },
+            { id: "security", icon: Shield,         tip: "Security Audit" },
+          ] as { id: NavId; icon: React.ComponentType<any>; tip: string }[]).map((item) => (
+            <NavRailItem key={item.id} {...item} active={nav === item.id} onClick={() => setNav(item.id)} />
+          ))}
+        </LayoutGroup>
 
-        <div className="hidden md:flex mt-auto">
-          <DockIcon icon={<Settings className="w-5 h-5" />} label="Settings" active={activeNav === "settings"} onClick={() => setActiveNav("settings")} />
+        <div className="mt-auto">
+          <NavRailItem id="settings" icon={Settings} tip="Settings" active={nav === "settings"} onClick={() => setNav("settings")} />
         </div>
-      </nav>
+      </motion.nav>
 
-      {/* ==================== MAIN DEVELOPER WORKSPACE ==================== */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden z-10">
-        
-        {/* Central Workspace Panel (70% width on Desktop) */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Top Repository Bar */}
-          <header className="h-16 px-6 border-b border-[#222436] flex items-center justify-between bg-[#08080A] shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-                <Globe className="w-4 h-4 text-[#818CF8]" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-white tracking-tight">sasiruliyanage2004</span>
-                  <span className="text-[#64748B]">/</span>
-                  <span className="text-sm font-bold text-indigo-400">GitBrain</span>
-                </div>
-                <div className="flex items-center gap-2.5 mt-0.5 text-[11px] text-[#64748B]">
-                  <span className="flex items-center gap-1"><GitBranch className="w-3 h-3 text-indigo-400" /> main</span>
-                  <span className="flex items-center gap-1"><GitCommitHorizontal className="w-3 h-3" /> 4d572a9</span>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">Production</span>
-                </div>
-              </div>
+      {/* ── MAIN COLUMN ── */}
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+
+        {/* Top bar */}
+        <motion.header
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, ...EASE }}
+          className="h-[56px] shrink-0 flex items-center px-5 gap-4 border-b"
+          style={{ background: "var(--surface-1)", borderColor: "var(--border)" }}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Globe size={14} className="text-indigo-400 shrink-0" />
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-sm font-semibold text-white truncate">sasiruliyanage2004</span>
+              <span className="text-zinc-600">/</span>
+              <span className="text-sm font-bold text-indigo-400 truncate">GitBrain</span>
+            </div>
+            <div className="hidden sm:flex items-center gap-2 ml-1">
+              <Chip icon={<GitBranch size={10} />} label="main" />
+              <Chip icon={<GitCommitHorizontal size={10} />} label="4d572a9" />
+              <Chip label="Production" accent />
+            </div>
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            {/* Search */}
+            <button onClick={() => setPalette(true)}
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-500 hover:text-zinc-300 rounded-lg border transition-all"
+              style={{ background: "var(--surface-2)", borderColor: "var(--border)" }}>
+              <Search size={12} />
+              <span>Search…</span>
+              <kbd className="text-[10px] px-1 border rounded" style={{ borderColor: "var(--border)", color: "var(--text-3)" }}>⌘K</kbd>
+            </button>
+
+            {/* Live pill */}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold"
+              style={{ background: "var(--mint-dim)", border: "1px solid rgba(52,211,153,0.25)", color: "#34D399" }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse" />
+              3 agents live
             </div>
 
-            <div className="flex items-center gap-3">
-              <div 
-                onClick={() => setCmdSearchOpen(true)}
-                className="hidden sm:flex items-center gap-2 bg-[#12131A] border border-[#222436] px-3 py-1.5 rounded-lg text-xs text-[#94A3B8] cursor-pointer hover:border-indigo-500/40 transition-colors"
-              >
-                <Search className="w-3.5 h-3.5" />
-                <span>Search files...</span>
-                <kbd className="text-[10px] bg-[#1a1c29] text-[#94A3B8] px-1.5 py-0.5 rounded border border-[#26283d] font-mono">Ctrl K</kbd>
-              </div>
+            <HeaderBtn onClick={takeSnapshot} ghost>
+              <Disc size={13} /> <span className="hidden sm:inline">Snapshot</span>
+            </HeaderBtn>
+            <HeaderBtn onClick={runPipeline}>
+              <Zap size={13} /> <span className="hidden sm:inline">Deploy</span>
+            </HeaderBtn>
+          </div>
+        </motion.header>
 
-              <div className="live-pill">
-                <span className="live-dot" />
-                <span>3 agents active</span>
-              </div>
+        {/* Main + Right Panel */}
+        <div className="flex-1 flex overflow-hidden">
 
-              <button onClick={handleTakeSnapshot} className="btn-ghost flex items-center gap-1.5">
-                <Disc className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Snapshot</span>
-              </button>
+          {/* Centre Panel */}
+          <main className="flex-1 overflow-hidden min-w-0">
+            <AnimatePresence mode="wait">
+              {nav === "map" && <MapView key="map" onNodeClick={(path) => { setFile(path); setNav("code"); }} />}
+              {nav === "code" && <CodeView key="code" file={file} onFileChange={setFile} />}
+              {nav === "prs" && <PRView key="prs" prs={prs} onMerge={mergePr} />}
+              {nav === "ci" && <CIView key="ci" logs={ciLogs} running={ciRunning} onRun={runPipeline} />}
+              {nav === "security" && <SecurityView key="security" />}
+              {nav === "settings" && <SettingsView key="settings" />}
+            </AnimatePresence>
+          </main>
 
-              <button onClick={handleRunPipeline} className="btn-primary flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Deploy</span>
-              </button>
-            </div>
-          </header>
-
-          {/* Main Active Panel View */}
-          <div className="flex-1 overflow-hidden relative bg-[#08080A]/60">
-
-            {/* NEURAL ARCHITECTURE MAP VIEW */}
-            {activeNav === "map" && (
-              <div className="h-full relative flex items-center justify-center p-6 overflow-hidden">
-                <MapCanvas onNodeSelect={(path) => { setSelectedFile(path); setActiveNav("code"); }} />
-              </div>
-            )}
-
-            {/* CODE EDITOR VIEW */}
-            {activeNav === "code" && (
-              <div className="h-full p-4 md:p-6 flex flex-col gap-4 overflow-hidden">
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  {Object.keys(MOCK_FILES).map(path => (
-                    <button
-                      key={path}
-                      onClick={() => setSelectedFile(path)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all flex items-center gap-2 border ${
-                        selectedFile === path ? "bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white border-transparent shadow-md" : "bg-[#12131A] border-[#222436] text-[#94A3B8] hover:text-white"
-                      }`}
-                    >
-                      <FileCode className="w-3.5 h-3.5" /> {path}
-                    </button>
-                  ))}
+          {/* Right: Antigravity AI Console */}
+          <motion.aside
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.18, ...EASE }}
+            className="hidden md:flex flex-col w-[340px] xl:w-[380px] shrink-0 border-l overflow-hidden"
+            style={{ background: "var(--surface-1)", borderColor: "var(--border)" }}
+          >
+            {/* Console header */}
+            <div className="px-4 pt-4 pb-3 border-b" style={{ borderColor: "var(--border)" }}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-white uppercase tracking-widest">
+                  <Sparkles size={13} className="text-indigo-400" />
+                  Antigravity Console
                 </div>
-                <div className="flex-1 glass-panel p-4 font-mono text-xs text-[#A5B4FC] overflow-y-auto leading-relaxed whitespace-pre-wrap">
-                  {MOCK_FILES[selectedFile] || "// File content empty"}
-                </div>
+                <span className="badge badge-indigo text-[10px]">Active</span>
               </div>
-            )}
 
-            {/* PULL REQUESTS VIEW */}
-            {activeNav === "prs" && (
-              <div className="h-full p-4 md:p-6 overflow-y-auto flex flex-col gap-4">
-                <h2 className="text-sm font-bold text-white">Active Pull Requests</h2>
-                {prs.map(pr => (
-                  <div key={pr.id} className="glass-panel p-4 flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-[#818CF8]">#{pr.id}</span>
-                        <h3 className="text-sm font-medium text-white">{pr.title}</h3>
-                      </div>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-[#64748B]">
-                        <span>Author: {pr.author}</span>
-                        <span>Branch: {pr.branch}</span>
-                        <span className="text-emerald-400">{pr.diffLines}</span>
-                      </div>
-                    </div>
-                    {pr.status === "merged" ? (
-                      <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-semibold rounded-lg">Merged</span>
-                    ) : (
-                      <button onClick={() => handleSemanticMerge(pr.id)} className="btn-primary flex items-center gap-1.5">
-                        <GitMerge className="w-3.5 h-3.5" /> AI Semantic Merge
-                      </button>
+              {/* Agent tabs */}
+              <div className="flex gap-1 p-1 rounded-xl" style={{ background: "var(--surface-3)" }}>
+                {AGENTS.map(a => (
+                  <motion.button
+                    key={a.id}
+                    onClick={() => setAgent(a.id)}
+                    className="relative flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-semibold rounded-lg z-10"
+                    style={{ color: agent === a.id ? a.color : "var(--text-3)" }}
+                    transition={SPRING}
+                  >
+                    {agent === a.id && (
+                      <motion.div layoutId="agent-tab"
+                        className="absolute inset-0 rounded-lg"
+                        style={{ background: a.accent, border: `1px solid ${a.color}30` }}
+                        transition={SPRING}
+                      />
                     )}
-                  </div>
+                    <a.icon size={11} className="relative z-10" />
+                    <span className="relative z-10">{a.label.split(" ")[0]}</span>
+                  </motion.button>
                 ))}
               </div>
-            )}
-
-            {/* CI WORKFLOWS VIEW */}
-            {activeNav === "ci" && (
-              <div className="h-full p-4 md:p-6 flex flex-col gap-4 overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-bold text-white">CI/CD Virtual Sandbox Logs</h2>
-                  <button onClick={handleRunPipeline} disabled={ciRunning} className="btn-primary flex items-center gap-1.5">
-                    <RefreshCw className={`w-3.5 h-3.5 ${ciRunning ? 'animate-spin' : ''}`} /> Run Pipeline
-                  </button>
-                </div>
-                <div className="flex-1 glass-panel p-4 font-mono text-xs text-emerald-400 overflow-y-auto leading-relaxed">
-                  {ciLogs.map((log, idx) => <div key={idx} className="py-0.5">{log}</div>)}
-                </div>
-              </div>
-            )}
-
-            {/* SECURITY AUDIT VIEW */}
-            {activeNav === "security" && (
-              <div className="h-full p-4 md:p-6 overflow-y-auto flex flex-col gap-4">
-                <h2 className="text-sm font-bold text-white">Security & Vulnerability Audit</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="glass-panel p-4">
-                    <div className="text-xs text-[#64748B]">Vulnerabilities</div>
-                    <div className="text-2xl font-bold text-emerald-400 mt-1">0 Found</div>
-                  </div>
-                  <div className="glass-panel p-4">
-                    <div className="text-xs text-[#64748B]">SAST Status</div>
-                    <div className="text-2xl font-bold text-indigo-400 mt-1">PASSED</div>
-                  </div>
-                  <div className="glass-panel p-4">
-                    <div className="text-xs text-[#64748B]">Dependencies</div>
-                    <div className="text-2xl font-bold text-white mt-1">100% Verified</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* SETTINGS VIEW */}
-            {activeNav === "settings" && (
-              <div className="h-full p-4 md:p-6 overflow-y-auto flex flex-col gap-4 text-xs text-[#94A3B8]">
-                <h2 className="text-sm font-bold text-white">System Settings & Health</h2>
-                <div className="glass-panel p-4 flex flex-col gap-2">
-                  <div className="flex justify-between border-b border-[#222436] pb-2"><span>API Gateway (Port 8000):</span><span className="text-emerald-400 font-bold">ONLINE</span></div>
-                  <div className="flex justify-between border-b border-[#222436] pb-2"><span>VCS Service (Port 8001):</span><span className="text-emerald-400 font-bold">ONLINE</span></div>
-                  <div className="flex justify-between border-b border-[#222436] pb-2"><span>AI Service (Port 8002):</span><span className="text-emerald-400 font-bold">ONLINE</span></div>
-                  <div className="flex justify-between"><span>CI Runner (Port 8003):</span><span className="text-emerald-400 font-bold">ONLINE</span></div>
-                </div>
-              </div>
-            )}
-
-          </div>
-        </div>
-
-        {/* Right Panel: Antigravity Multi-Agent Console (30% width) */}
-        <aside className="
-          w-full h-[55vh] md:h-full md:w-[360px] xl:w-[400px]
-          border-t md:border-t-0 md:border-l border-[#222436]
-          bg-[#08080A] flex flex-col shrink-0
-        ">
-          <div className="px-5 pt-5 pb-4 border-b border-[#222436] shrink-0">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Rocket className="w-4 h-4 text-indigo-400" />
-                <span className="text-xs font-bold text-white uppercase tracking-wider">Antigravity Console</span>
-              </div>
-              <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold px-2 py-0.5 rounded border border-indigo-500/30">Active</span>
             </div>
 
-            {/* Agent Selection Tabs */}
-            <div className="flex gap-1 p-1 bg-[#12131A] rounded-xl border border-[#222436]">
-              {AGENTS.map(a => (
-                <button
-                  key={a.id}
-                  onClick={() => setActiveAgent(a.id)}
-                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                    activeAgent === a.id ? "bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white shadow-md" : "text-[#64748B] hover:text-white"
-                  }`}
+            {/* Message stream */}
+            <div ref={chatRef} className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3" style={{ scrollbarWidth: "none" }}>
+              <AnimatePresence initial={false}>
+                {msgs.map((msg) => {
+                  const ag = AGENTS.find(a => a.id === msg.agentId);
+                  const isUser = msg.agentId === "user";
+                  return (
+                    <motion.div key={msg.id}
+                      initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                      className={`flex gap-2.5 ${isUser ? "flex-row-reverse" : "flex-row"} items-start`}
+                    >
+                      {!isUser && ag && (
+                        <div className="w-6 h-6 rounded-lg shrink-0 mt-0.5 flex items-center justify-center" style={{ background: ag.accent, border: `1px solid ${ag.color}30` }}>
+                          {msg.status === "running"
+                            ? <div className="w-2 h-2 rounded-full pulse" style={{ background: ag.color }} />
+                            : <ag.icon size={11} style={{ color: ag.color }} />}
+                        </div>
+                      )}
+                      <div className={`flex flex-col gap-1 max-w-[85%] ${isUser ? "items-end" : "items-start"}`}>
+                        <span className="text-[10px] font-medium" style={{ color: "var(--text-3)" }}>
+                          {isUser ? "You" : ag?.label} · {msg.ts}
+                        </span>
+                        <div className="px-3 py-2 rounded-xl text-[12px] leading-relaxed"
+                          style={isUser
+                            ? { background: "linear-gradient(135deg,#6366F1,#8B5CF6)", color: "#fff" }
+                            : msg.status === "error"
+                              ? { background: "var(--rose-dim)", border: "1px solid rgba(244,63,94,0.2)", color: "#FDA4AF" }
+                              : { background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-2)" }
+                          }>
+                          {msg.text}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+
+            {/* Quick commands */}
+            <div className="px-4 py-2 flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+              {["/snapshot", "/merge", "/fix-ci", "/plan"].map(cmd => (
+                <button key={cmd} onClick={() => setInput(cmd)}
+                  className="shrink-0 text-[11px] px-2.5 py-1 rounded-lg border transition-all"
+                  style={{ background: "var(--surface-2)", borderColor: "var(--border)", color: "var(--text-3)" }}
                 >
-                  {React.createElement(a.icon, { className: "w-3.5 h-3.5" })}
-                  <span>{a.label}</span>
+                  {cmd}
                 </button>
               ))}
             </div>
-          </div>
 
-          {/* Trajectory Stream */}
-          <div ref={chatRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-3" style={{ scrollbarWidth: "none" }}>
-            {msgs.map(m => (
-              <div key={m.id} className={`flex flex-col ${m.agent === 'user' ? 'items-end' : 'items-start'}`}>
-                <span className="text-[10px] text-[#64748B] mb-1 font-mono">{m.agent} · {m.time}</span>
-                <div className={`p-3 rounded-xl text-xs max-w-[88%] leading-relaxed ${
-                  m.agent === 'user' 
-                    ? 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white shadow-md' 
-                    : 'bg-[#12131A] text-[#E2E8F0] border border-[#222436]'
-                }`}>
-                  {m.action}
+            {/* Input form */}
+            <div className="p-4 pt-0">
+              <form onSubmit={sendMsg} className="flex gap-2">
+                <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl border"
+                  style={{ background: "var(--surface-2)", borderColor: "var(--border)" }}>
+                  <Command size={12} className="text-zinc-600 shrink-0" />
+                  <input
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    placeholder="Instruct AI agents…"
+                    className="flex-1 bg-transparent text-[12px] text-white placeholder-zinc-600 outline-none"
+                  />
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Slash Command Quick Chips */}
-          <div className="px-4 pt-2 pb-1 flex gap-1.5 overflow-x-auto shrink-0" style={{ scrollbarWidth: "none" }}>
-            {["/snapshot", "/semantic-merge", "/fix-issue", "/plan-sprint"].map(cmd => (
-              <button
-                key={cmd}
-                onClick={() => setInput(cmd)}
-                className="whitespace-nowrap text-[11px] px-2.5 py-1 rounded-lg bg-[#12131A] hover:bg-[#1a1c28] border border-[#222436] text-[#94A3B8] hover:text-white transition-colors"
-              >
-                {cmd}
-              </button>
-            ))}
-          </div>
-
-          {/* Prompt Input */}
-          <div className="p-4 pt-2 shrink-0">
-            <form onSubmit={sendMessage} className="flex gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                placeholder="Instruct AI agents..."
-                className="flex-1 bg-[#12131A] border border-[#222436] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-[#64748B] focus:outline-none focus:border-[#6366F1]"
-              />
-              <button type="submit" className="btn-primary flex items-center justify-center px-4">
-                <Send className="w-3.5 h-3.5" />
-              </button>
-            </form>
-          </div>
-        </aside>
-
+                <motion.button type="submit" whileTap={{ scale: 0.93 }}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                  style={{
+                    background: input.trim() ? "linear-gradient(135deg,#6366F1,#8B5CF6)" : "var(--surface-2)",
+                    border: "1px solid var(--border)",
+                    boxShadow: input.trim() ? "0 2px 12px rgba(99,102,241,0.35)" : "none",
+                  }}>
+                  <Send size={14} className="text-white" />
+                </motion.button>
+              </form>
+            </div>
+          </motion.aside>
+        </div>
       </div>
+
+      {/* ── Mobile bottom nav ── */}
+      <nav className="md:hidden w-full h-14 shrink-0 flex items-center justify-around px-4 border-t order-last"
+        style={{ background: "var(--surface-1)", borderColor: "var(--border)" }}>
+        {([
+          { id: "map", icon: Network }, { id: "code", icon: Code2 },
+          { id: "prs", icon: GitPullRequest }, { id: "ci", icon: Play }, { id: "security", icon: Shield },
+        ] as { id: NavId; icon: React.ComponentType<any> }[]).map(({ id, icon: Icon }) => (
+          <button key={id} onClick={() => setNav(id)}
+            className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
+            style={{
+              background: nav === id ? "linear-gradient(135deg,#6366F1,#8B5CF6)" : "transparent",
+              boxShadow: nav === id ? "0 2px 12px rgba(99,102,241,0.35)" : "none",
+            }}>
+            <Icon size={18} style={{ color: nav === id ? "#fff" : "var(--text-3)" }} />
+          </button>
+        ))}
+      </nav>
+
     </div>
   );
 }
 
-// Subcomponents
+/* ═══════════════════════════════════════════════════════════
+   VIEW PANELS
+═══════════════════════════════════════════════════════════ */
 
-function DockIcon({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void }) {
+function ViewWrap({ children }: { children: React.ReactNode }) {
   return (
-    <button
-      onClick={onClick}
-      className={`nav-dock-item ${active ? 'active' : ''}`}
-      title={label}
+    <motion.div
+      className="h-full overflow-y-auto p-5 flex flex-col gap-5"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={EASE}
     >
-      {icon}
-    </button>
+      {children}
+    </motion.div>
   );
 }
 
-function MapCanvas({ onNodeSelect }: { onNodeSelect: (path: string) => void }) {
+function MapView({ onNodeClick }: { onNodeClick: (path: string) => void }) {
   return (
-    <div className="h-full relative w-full flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle, #ffffff0a 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
-      {FILE_NODES.map((node, i) => (
-        <motion.div
-          key={node.id}
+    <motion.div className="h-full relative overflow-hidden"
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={EASE}>
+      {/* Glow */}
+      <div className="absolute pointer-events-none" style={{
+        inset: 0,
+        background: "radial-gradient(ellipse at 50% 45%, rgba(99,102,241,0.08) 0%, transparent 60%)"
+      }} />
+      {/* Metric strip */}
+      <div className="absolute top-4 inset-x-4 grid grid-cols-2 lg:grid-cols-4 gap-3 z-10">
+        {METRICS.map((m, i) => (
+          <motion.div key={m.label} className="card px-4 py-3 flex items-center gap-3"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={STAGGER(i)}
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: `${m.accent}22`, border: `1px solid ${m.accent}25` }}>
+              <m.icon size={14} style={{ color: m.accent }} />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-white leading-none">{m.value}</div>
+              <div className="text-[10px] mt-0.5" style={{ color: "var(--text-3)" }}>{m.label}</div>
+            </div>
+            <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded"
+              style={{ background: m.up ? "var(--mint-dim)" : "var(--rose-dim)", color: m.up ? "#34D399" : "#FB7185" }}>
+              {m.delta}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Node graph */}
+      <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none">
+        <defs>
+          <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#6366F1" stopOpacity="0" />
+            <stop offset="50%" stopColor="#8B5CF6" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#6366F1" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {NODES.filter(n => !n.r).map(n => (
+          <line key={n.id} x1="50%" y1="42%" x2={n.x} y2={n.y} stroke="url(#lg)" strokeWidth="1" strokeDasharray="4,4" />
+        ))}
+      </svg>
+
+      {/* Nodes */}
+      {NODES.map((node, i) => (
+        <motion.div key={node.id}
+          className="absolute z-10 flex flex-col items-center gap-2 cursor-pointer"
+          style={{ left: node.x, top: node.y, transform: "translate(-50%,-50%)" }}
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 + i * 0.05, ...easeOut }}
-          onClick={() => onNodeSelect(node.path)}
-          className="absolute flex flex-col items-center gap-2 cursor-pointer group z-10"
-          style={{ left: node.x, top: node.y, transform: "translate(-50%, -50%)" }}
+          transition={STAGGER(i + 4)}
+          onClick={() => onNodeClick(`${node.label}/server.ts`)}
         >
-          <motion.div
-            whileHover={{ scale: 1.15 }}
-            className="relative flex items-center justify-center rounded-2xl shadow-xl"
-            style={{ width: node.ring ? 54 : 44, height: node.ring ? 54 : 44, background: `${node.color}1E`, border: `1px solid ${node.color}50` }}
-          >
-            {React.createElement(node.icon, { className: "w-5 h-5", style: { color: node.color } })}
+          <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.95 }} transition={SPRING}
+            className="flex items-center justify-center rounded-2xl relative"
+            style={{
+              width: node.r ? 56 : 44, height: node.r ? 56 : 44,
+              background: `${node.c}18`, border: `1px solid ${node.c}40`,
+              boxShadow: node.r ? `0 0 24px ${node.c}30` : "none",
+            }}>
+            <node.icon size={node.r ? 22 : 18} style={{ color: node.c }} />
+            {node.r && (
+              <motion.div className="absolute inset-0 rounded-2xl"
+                style={{ border: `1px solid ${node.c}30` }}
+                animate={{ scale: [1, 1.3], opacity: [0.4, 0] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: "easeOut" }}
+              />
+            )}
           </motion.div>
-          <span className="text-[11px] font-bold" style={{ color: node.color }}>{node.label}</span>
+          <span className="text-[11px] font-semibold" style={{ color: node.c }}>{node.label}</span>
         </motion.div>
       ))}
-    </div>
+
+      {/* Bottom search hint */}
+      <div className="absolute bottom-5 inset-x-0 flex justify-center">
+        <div className="flex items-center gap-2 px-4 py-2 rounded-xl border text-xs"
+          style={{ background: "rgba(12,12,16,0.9)", borderColor: "var(--border)", color: "var(--text-3)", backdropFilter: "blur(12px)" }}>
+          <Search size={12} /> Click any node to open in editor &nbsp;·&nbsp; <kbd className="text-[10px]">⌘K</kbd> to search
+        </div>
+      </div>
+    </motion.div>
   );
 }
+
+function CodeView({ file, onFileChange }: { file: string; onFileChange: (f: string) => void }) {
+  const files = Object.keys(MOCK_FILES);
+  return (
+    <ViewWrap>
+      <div className="flex items-center gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+        {files.map(f => (
+          <motion.button key={f} onClick={() => onFileChange(f)}
+            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all"
+            animate={{
+              background: file === f ? "rgba(99,102,241,0.15)" : "var(--surface-2)",
+              borderColor: file === f ? "rgba(99,102,241,0.35)" : "var(--border)",
+              color: file === f ? "#818CF8" : "var(--text-3)",
+            }}
+          >
+            <FileCode size={12} /> {f}
+          </motion.button>
+        ))}
+      </div>
+      <div className="card flex-1 p-4 font-mono text-xs leading-relaxed overflow-y-auto"
+        style={{ color: "#A5B4FC", minHeight: 400 }}>
+        <pre className="whitespace-pre-wrap">{MOCK_FILES[file]?.code ?? "// Select a file"}</pre>
+      </div>
+    </ViewWrap>
+  );
+}
+
+function PRView({ prs, onMerge }: { prs: any[]; onMerge: (id: string) => void }) {
+  return (
+    <ViewWrap>
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-bold text-white">Pull Requests</h2>
+        <span className="badge badge-indigo">{prs.filter(p => p.status === "open").length} open</span>
+      </div>
+      {prs.map((pr, i) => (
+        <motion.div key={pr.id} className="card p-4 flex items-start gap-4"
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={STAGGER(i)}>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--indigo-dim)", border: "1px solid rgba(99,102,241,0.2)" }}>
+            <GitPullRequest size={14} className="text-indigo-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold text-indigo-400">#{pr.id}</span>
+              <span className="text-sm font-semibold text-white truncate">{pr.title}</span>
+            </div>
+            <div className="flex items-center gap-3 mt-1.5 text-[11px]" style={{ color: "var(--text-3)" }}>
+              <span>{pr.author}</span>
+              <span>→ <span className="text-indigo-400">{pr.branch}</span></span>
+              <span className="text-emerald-400 font-mono">{pr.diff}</span>
+            </div>
+          </div>
+          {pr.status === "merged" ? (
+            <span className="badge badge-violet shrink-0">Merged</span>
+          ) : (
+            <motion.button onClick={() => onMerge(pr.id)}
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+              className="btn btn-indigo shrink-0 text-[12px]">
+              <GitMerge size={13} /> AI Merge
+            </motion.button>
+          )}
+        </motion.div>
+      ))}
+    </ViewWrap>
+  );
+}
+
+function CIView({ logs, running, onRun }: { logs: string[]; running: boolean; onRun: () => void }) {
+  return (
+    <ViewWrap>
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-bold text-white">CI/CD Virtual Sandbox</h2>
+        <motion.button onClick={onRun} disabled={running} whileTap={{ scale: 0.95 }} className="btn btn-indigo">
+          <RefreshCw size={13} className={running ? "animate-spin" : ""} />
+          {running ? "Running…" : "Run Pipeline"}
+        </motion.button>
+      </div>
+      <div className="card flex-1 p-4 font-mono text-xs text-emerald-400 overflow-y-auto leading-relaxed min-h-[300px]">
+        {logs.map((l, i) => (
+          <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}>
+            {l}
+          </motion.div>
+        ))}
+      </div>
+    </ViewWrap>
+  );
+}
+
+function SecurityView() {
+  const items = [
+    { label: "Critical Vulnerabilities", value: "0",    c: "#34D399" },
+    { label: "SAST Scan Status",          value: "PASS", c: "#818CF8" },
+    { label: "Supply Chain Integrity",     value: "100%", c: "#F59E0B" },
+    { label: "Secret Scanning",            value: "0 leaks", c: "#34D399" },
+  ];
+  return (
+    <ViewWrap>
+      <h2 className="text-sm font-bold text-white">Security & Vulnerability Audit</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {items.map((it, i) => (
+          <motion.div key={it.label} className="card p-5"
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={STAGGER(i)}>
+            <div className="text-xs mb-2" style={{ color: "var(--text-3)" }}>{it.label}</div>
+            <div className="text-2xl font-bold" style={{ color: it.c }}>{it.value}</div>
+          </motion.div>
+        ))}
+      </div>
+    </ViewWrap>
+  );
+}
+
+function SettingsView() {
+  const services = [
+    { name: "API Gateway",      port: 8000 },
+    { name: "VCS Storage",      port: 8001 },
+    { name: "AI Orchestrator",  port: 8002 },
+    { name: "CI Runner",        port: 8003 },
+  ];
+  return (
+    <ViewWrap>
+      <h2 className="text-sm font-bold text-white">System Settings & Health</h2>
+      <div className="card divide-y" style={{ borderColor: "var(--border)" }}>
+        {services.map(s => (
+          <div key={s.name} className="flex items-center justify-between px-4 py-3">
+            <div>
+              <div className="text-xs font-semibold text-white">{s.name}</div>
+              <div className="text-[10px] mt-0.5" style={{ color: "var(--text-3)" }}>localhost:{s.port}</div>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse" />
+              <span className="text-xs font-semibold text-emerald-400">Online</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </ViewWrap>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SHARED PRIMITIVES
+═══════════════════════════════════════════════════════════ */
+
+function NavRailItem({ id, icon: Icon, tip, active, onClick }: { id: string; icon: React.ComponentType<any>; tip: string; active: boolean; onClick: () => void }) {
+  return (
+    <motion.button
+      onClick={onClick}
+      title={tip}
+      className="relative w-10 h-10 rounded-xl flex items-center justify-center"
+      transition={SPRING}
+      animate={{
+        background: active ? "rgba(99,102,241,0.15)" : "transparent",
+      }}
+    >
+      {active && (
+        <>
+          <motion.div layoutId="nav-rail-bg"
+            className="absolute inset-0 rounded-xl"
+            style={{ background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.25)" }}
+            transition={SPRING}
+          />
+          <motion.div layoutId="nav-rail-indicator"
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full"
+            style={{ background: "linear-gradient(to bottom,#6366F1,#8B5CF6)" }}
+            transition={SPRING}
+          />
+        </>
+      )}
+      <Icon size={17} className="relative z-10 transition-colors"
+        style={{ color: active ? "#818CF8" : "var(--text-3)" }} />
+    </motion.button>
+  );
+}
+
+function HeaderBtn({ children, onClick, ghost }: { children: React.ReactNode; onClick: () => void; ghost?: boolean }) {
+  return (
+    <motion.button onClick={onClick} whileTap={{ scale: 0.95 }}
+      className="btn"
+      style={ghost
+        ? { background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-2)" }
+        : { background: "linear-gradient(135deg,#6366F1,#8B5CF6)", color: "#fff", boxShadow: "0 2px 12px rgba(99,102,241,0.3)" }
+      }
+    >
+      {children}
+    </motion.button>
+  );
+}
+
+function Chip({ icon, label, accent }: { icon?: React.ReactNode; label: string; accent?: boolean }) {
+  return (
+    <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold"
+      style={accent
+        ? { background: "rgba(52,211,153,0.12)", border: "1px solid rgba(52,211,153,0.25)", color: "#34D399" }
+        : { background: "var(--surface-3)", border: "1px solid var(--border)", color: "var(--text-3)" }
+      }>
+      {icon} {label}
+    </span>
+  );
+}
+
+// ── Util ──
+function now() { return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); }
